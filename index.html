@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horizon Cosmic Explorers</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root { --bg: #0b0f19; --card: #151b2b; --accent: #00d4ff; --text: #e6f0ff; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    header { text-align: center; padding: 20px; background: linear-gradient(180deg, #0f172a, var(--bg)); }
+    h1 { font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 4px; }
+    .tagline { font-size: 0.9rem; color: #8892b0; }
+    main { flex: 1; padding: 15px; padding-bottom: 80px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    #map { height: 300px; border-radius: 12px; margin: 15px 0; }
+    .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .constellation { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
+    .constellation span { color: var(--accent); font-weight: bold; }
+    form input, form button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: none; }
+    form input { background: #1e293b; color: white; }
+    form button { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; }
+    .event { border-left: 3px solid var(--accent); }
+    .rsvp { background: #1e293b; color: white; margin-top: 8px; }
+    nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; }
+    nav button { background: none; border: none; color: #8892b0; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; }
+    nav button.active { color: var(--accent); }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>HORIZON COSMIC EXPLORERS</h1>
+    <p class="tagline">🇧 Bahamas Stargazing Platform</p>
+  </header>
+
+  <main>
+    <!-- TRACKER TAB -->
+    <div id="tracker" class="tab-content active">
+      <div class="card">
+        <h3>🛰️ Live ISS Tracker</h3>
+        <p>Real-time position over the Bahamas</p>
+        <div id="map"></div>
+        <div id="iss-data" class="pulse" style="text-align:center; font-family:monospace; color:var(--accent);">Loading...</div>
+      </div>
+    </div>
+
+    <!-- SKY TAB -->
+    <div id="sky" class="tab-content">
+      <div class="card">
+        <h3>🌌 Tonight's Sky (Nassau)</h3>
+        <p id="sky-date"></p>
+        <div id="constellations"></div>
+      </div>
+    </div>
+
+    <!-- EVENTS TAB -->
+    <div id="events" class="tab-content">
+      <div class="card">
+        <h3>📅 Stargazing Event Invites</h3>
+        <form id="event-form">
+          <input type="text" id="event-name" placeholder="Event Name (e.g. Perseid Watch)" required>
+          <input type="datetime-local" id="event-time" required>
+          <input type="text" id="event-location" placeholder="Location (e.g. Love Beach)" required>
+          <button type="submit">📡 Broadcast Invite</button>
+        </form>
+      </div>
+      <div id="event-list"></div>
+    </div>
+  </main>
+
+  <nav>
+    <button class="active" onclick="showTab('tracker')">🛰️ Tracker</button>
+    <button onclick="showTab('sky')">🌌 Sky</button>
+    <button onclick="showTab('events')">📅 Events</button>
+  </nav>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // TAB SWITCHING
+    function showTab(id) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // MAP & ISS TRACKING
+    const map = L.map('map').setView([25.0343, -77.3963], 5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    const issIcon = L.divIcon({ html: '🛰️', className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
+    const issMarker = L.marker([25.0343, -77.3963], { icon: issIcon }).addTo(map);
+    let issPolyline = L.polyline([], { color: '#00d4ff', weight: 2 }).addTo(map);
+
+    async function updateISS() {
+      try {
+        const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
+        const data = await res.json();
+        issMarker.setLatLng([data.latitude, data.longitude]);
+        issPolyline.addLatLng([data.latitude, data.longitude]);
+        document.getElementById('iss-data').innerHTML = 
+          `LAT: ${data.latitude.toFixed(4)}° | LON: ${data.longitude.toFixed(4)}° | ALT: ${Math.round(data.altitude)} km`;
+      } catch(e) {
+        document.getElementById('iss-data').textContent = 'Signal lost. Reconnecting...';
+      }
+    }
+    updateISS();
+    setInterval(updateISS, 5000);
+
+    // CONSTELLATION VISIBILITY (SIMULATED FOR DEMO)
+    const month = new Date().getMonth();
+    const constellations = [
+      { name: 'Orion', visible: [10,11,0,1,2], desc: 'Hunter | Best: Dec-Feb' },
+      { name: 'Ursa Major', visible: [2,3,4,5,6], desc: 'Big Dipper | Best: Mar-May' },
+      { name: 'Crux (Southern Cross)', visible: [1,2,3,4,5], desc: 'Southern sky | Best: Feb-Apr' },
+      { name: 'Scorpius', visible: [4,5,6,7,8], desc: 'Summer triangle | Best: May-Jul' },
+      { name: 'Pegasus', visible: [7,8,9,10], desc: 'Fall square | Best: Aug-Oct' },
+      { name: 'Canis Major', visible: [11,0,1], desc: 'Sirius | Best: Nov-Jan' }
+    ];
+    const tonight = constellations.filter(c => c.visible.includes(month));
+    document.getElementById('sky-date').textContent = `Visible from Bahamas • ${new Date().toLocaleDateString('en-US', { month:'long', day:'numeric' })}`;
+    const skyDiv = document.getElementById('constellations');
+    tonight.forEach(c => {
+      skyDiv.innerHTML += `<div class="constellation"><span>${c.name}</span> ${c.desc}</div>`;
+    });
+
+    // EVENTS SYSTEM (LOCALSTORAGE)
+    const form = document.getElementById('event-form');
+    const list = document.getElementById('event-list');
+    let events = JSON.parse(localStorage.getItem('horizon-events') || '[]');
+
+    function renderEvents() {
+      list.innerHTML = '';
+      events.forEach((ev, i) => {
+        list.innerHTML += `
+          <div class="card event">
+            <h4>${ev.name}</h4>
+            <p>📍 ${ev.location} | 🕒 ${new Date(ev.time).toLocaleString()}</p>
+            <button class="rsvp" onclick="rsvp(${i})">✅ RSVP</button>
+          </div>`;
+      });
+    }
+    renderEvents();
+
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const ev = {
+        name: document.getElementById('event-name').value,
+        time: document.getElementById('event-time').value,
+        location: document.getElementById('event-location').value,
+        rsvps: 0
+      };
+      events.unshift(ev);
+      localStorage.setItem('horizon-events', JSON.stringify(events));
+      form.reset();
+      renderEvents();
+    };
+
+    window.rsvp = (i) => {
+      events[i].rsvps++;
+      localStorage.setItem('horizon-events', JSON.stringify(events));
+      renderEvents();
+    };
+  </script>
+</body>
+</html>
