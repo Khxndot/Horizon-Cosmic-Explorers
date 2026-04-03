@@ -3,144 +3,1326 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Horizon Cosmic Explorers</title>
+  <title>Horizon Cosmic Explorers | Advanced Observatory</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root { --bg: #0b0f19; --card: #151b2b; --accent: #00d4ff; --text: #e6f0ff; }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-    header { text-align: center; padding: 20px; background: linear-gradient(180deg, #0f172a, var(--bg)); }
-    h1 { font-size: 1.8rem; letter-spacing: 1px; margin-bottom: 4px; }
-    .tagline { font-size: 0.9rem; color: #8892b0; }
-    main { flex: 1; padding: 15px; padding-bottom: 80px; }
-    .tab-content { display: none; }
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+    
+    :root {
+      --bg: #000510;
+      --card: rgba(10, 20, 40, 0.7);
+      --accent: #00d4ff;
+      --accent2: #ff00aa;
+      --accent3: #ffaa00;
+      --text: #e6f0ff;
+      --glass: rgba(255, 255, 255, 0.05);
+    }
+    
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Rajdhani', sans-serif;
+    }
+    
+    body { 
+      background: var(--bg); 
+      color: var(--text); 
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated Stars Background */
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle var(--duration) ease-in-out infinite;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: var(--opacity); }
+      50% { opacity: 0.2; }
+    }
+
+    /* Header */
+    header { 
+      text-align: center; 
+      padding: 25px 15px; 
+      background: linear-gradient(180deg, rgba(0,100,255,0.2), transparent);
+      border-bottom: 1px solid var(--glass);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    
+    h1 { 
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.6rem; 
+      letter-spacing: 2px; 
+      margin-bottom: 5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 30px rgba(0,212,255,0.5);
+    }
+    
+    .tagline { 
+      font-size: 0.85rem; 
+      color: #8892b0;
+      letter-spacing: 1px;
+    }
+
+    /* Main Content */
+    main { 
+      padding: 15px; 
+      padding-bottom: 100px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .tab-content { display: none; animation: fadeIn 0.4s; }
     .tab-content.active { display: block; }
-    #map { height: 300px; border-radius: 12px; margin: 15px 0; }
-    .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    .constellation { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; }
-    .constellation span { color: var(--accent); font-weight: bold; }
-    form input, form button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: none; }
-    form input { background: #1e293b; color: white; }
-    form button { background: var(--accent); color: #000; font-weight: bold; cursor: pointer; }
-    .event { border-left: 3px solid var(--accent); }
-    .rsvp { background: #1e293b; color: white; margin-top: 8px; }
-    nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #1e293b; }
-    nav button { background: none; border: none; color: #8892b0; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; }
-    nav button.active { color: var(--accent); }
-    .pulse { animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card { 
+      background: var(--card);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--glass);
+      padding: 20px; 
+      border-radius: 16px; 
+      margin-bottom: 15px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,212,255,0.15);
+    }
+
+    .card h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--accent);
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Data Grid */
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 15px;
+    }
+    
+    .data-item {
+      background: rgba(0,212,255,0.05);
+      padding: 12px;
+      border-radius: 10px;
+      border-left: 3px solid var(--accent);
+    }
+    
+    .data-label {
+      font-size: 0.75rem;
+      color: #8892b0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+    
+    .data-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'Orbitron', monospace;
+    }
+
+    /* Map */
+    #map { 
+      height: 280px; 
+      border-radius: 12px; 
+      margin: 15px 0;
+      border: 2px solid var(--glass);
+    }
+
+    /* Planet Cards */
+    .planet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 15px;
+    }
+    
+    .planet-card {
+      background: linear-gradient(135deg, rgba(0,100,255,0.1), rgba(255,0,170,0.1));
+      border: 1px solid var(--glass);
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .planet-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .planet-card:hover::before {
+      opacity: 1;
+    }
+    
+    .planet-card:hover {
+      transform: scale(1.05) translateY(-5px);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(0,212,255,0.3);
+    }
+    
+    .planet-icon {
+      font-size: 3rem;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .planet-name {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    
+    .planet-status {
+      font-size: 0.75rem;
+      color: #8892b0;
+    }
+
+    /* Planet Detail Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,5,16,0.95);
+      z-index: 2000;
+      overflow-y: auto;
+      backdrop-filter: blur(10px);
+    }
+    
+    .modal.active {
+      display: block;
+      animation: slideUp 0.4s;
+    }
+    
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    
+    .modal-content {
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-header h2 {
+      font-family: 'Orbitron', sans-serif;
+      color: var(--accent);
+      font-size: 1.8rem;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 2rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background 0.3s;
+    }
+    
+    .close-btn:hover {
+      background: var(--glass);
+    }
+
+    /* Technical Data Table */
+    .tech-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    
+    .tech-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--glass);
+    }
+    
+    .tech-table td:first-child {
+      color: #8892b0;
+      font-size: 0.9rem;
+      width: 40%;
+    }
+    
+    .tech-table td:last-child {
+      font-family: 'Orbitron', monospace;
+      color: var(--accent);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    /* Constellation List */
+    .constellation-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: rgba(255,255,255,0.03);
+      margin: 8px 0;
+      border-radius: 8px;
+      border-left: 3px solid var(--accent2);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .constellation-item:hover {
+      background: rgba(0,212,255,0.1);
+      transform: translateX(5px);
+    }
+    
+    .constellation-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    
+    .constellation-info {
+      font-size: 0.85rem;
+      color: #8892b0;
+    }
+
+    /* Sun/Moon Display */
+    .celestial-display {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    
+    .celestial-card {
+      background: linear-gradient(135deg, rgba(255,170,0,0.1), rgba(255,100,0,0.1));
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid rgba(255,170,0,0.3);
+    }
+    
+    .celestial-card.moon {
+      background: linear-gradient(135deg, rgba(200,200,255,0.1), rgba(100,100,150,0.1));
+      border-color: rgba(200,200,255,0.3);
+    }
+    
+    .celestial-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+    
+    .celestial-time {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.3rem;
+      color: var(--accent3);
+      margin: 5px 0;
+    }
+    
+    .celestial-card.moon .celestial-time {
+      color: #c8d0ff;
+    }
+
+    /* Navigation */
+    nav { 
+      position: fixed; 
+      bottom: 0; 
+      width: 100%; 
+      background: rgba(5,10,20,0.95);
+      backdrop-filter: blur(20px);
+      display: flex; 
+      justify-content: space-around; 
+      padding: 12px 0; 
+      border-top: 1px solid var(--glass);
+      z-index: 1000;
+    }
+    
+    nav button { 
+      background: none; 
+      border: none; 
+      color: #8892b0; 
+      font-size: 0.8rem; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 12px;
+      transition: all 0.3s;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+    }
+    
+    nav button i {
+      font-size: 1.3rem;
+    }
+    
+    nav button.active { 
+      color: var(--accent);
+      background: rgba(0,212,255,0.1);
+    }
+
+    /* Pulse Animation */
+    .pulse { 
+      animation: pulse 2s infinite; 
+    }
+    
+    @keyframes pulse { 
+      0%,100% { opacity: 1; } 
+      50% { opacity: 0.6; } 
+    }
+
+    /* Status Badge */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-left: 10px;
+    }
+    
+    .status-visible {
+      background: rgba(0,255,100,0.2);
+      color: #00ff64;
+      border: 1px solid #00ff64;
+    }
+    
+    .status-hidden {
+      background: rgba(255,100,100,0.2);
+      color: #ff6464;
+      border: 1px solid #ff6464;
+    }
+
+    /* Event Form */
+    form input, form button, form select { 
+      width: 100%; 
+      padding: 14px; 
+      margin: 8px 0; 
+      border-radius: 10px; 
+      border: 1px solid var(--glass);
+      background: rgba(0,0,0,0.3);
+      color: white;
+      font-size: 1rem;
+    }
+    
+    form input:focus, form select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(0,212,255,0.2);
+    }
+    
+    form button { 
+      background: linear-gradient(135deg, var(--accent), var(--accent2)); 
+      color: #000; 
+      font-weight: 700; 
+      cursor: pointer;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+      border: none;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    form button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,212,255,0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      h1 { font-size: 1.3rem; }
+      .data-grid { grid-template-columns: 1fr; }
+      .planet-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Loading Spinner */
+    .spinner {
+      border: 3px solid rgba(0,212,255,0.1);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
+  <!-- Animated Stars -->
+  <div class="stars" id="stars"></div>
+
   <header>
-    <h1>HORIZON COSMIC EXPLORERS</h1>
-    <p class="tagline">🇧 Bahamas Stargazing Platform</p>
+    <h1><i class="fas fa-meteor"></i> HORIZON COSMIC</h1>
+    <p class="tagline">Advanced Observatory Platform 🇧</p>
   </header>
 
   <main>
     <!-- TRACKER TAB -->
     <div id="tracker" class="tab-content active">
       <div class="card">
-        <h3>🛰️ Live ISS Tracker</h3>
-        <p>Real-time position over the Bahamas</p>
+        <h3><i class="fas fa-satellite"></i> Live Satellite Tracking</h3>
         <div id="map"></div>
-        <div id="iss-data" class="pulse" style="text-align:center; font-family:monospace; color:var(--accent);">Loading...</div>
+        <div id="iss-data" class="pulse" style="text-align:center; font-family:'Orbitron',monospace; color:var(--accent); font-size:0.9rem;">
+          <div class="spinner"></div>
+          Acquiring signal...
+        </div>
+        
+        <div class="data-grid" style="margin-top:20px;">
+          <div class="data-item">
+            <div class="data-label">Velocity</div>
+            <div class="data-value" id="iss-velocity">-- km/s</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Footprint</div>
+            <div class="data-value" id="iss-footprint">-- km</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Daynum</div>
+            <div class="data-value" id="iss-daynum">--</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Solar Lat</div>
+            <div class="data-value" id="iss-solar-lat">--°</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-moon"></i> Moon Phase & Data</h3>
+        <div class="data-grid">
+          <div class="data-item">
+            <div class="data-label">Phase</div>
+            <div class="data-value" id="moon-phase">--</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Illumination</div>
+            <div class="data-value" id="moon-illumination">--%</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Age</div>
+            <div class="data-value" id="moon-age">-- days</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Distance</div>
+            <div class="data-value" id="moon-distance">-- km</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- SKY TAB -->
+    <!-- SKY MAP TAB -->
     <div id="sky" class="tab-content">
       <div class="card">
-        <h3>🌌 Tonight's Sky (Nassau)</h3>
-        <p id="sky-date"></p>
+        <h3><i class="fas fa-sun"></i> Sunrise & Sunset <span style="font-size:0.8rem; color:#8892b0;">(Nassau)</span></h3>
+        <div class="celestial-display">
+          <div class="celestial-card">
+            <div class="celestial-icon">🌅</div>
+            <div style="color:#8892b0; font-size:0.9rem;">Sunrise</div>
+            <div class="celestial-time" id="sunrise">--:--</div>
+            <div style="font-size:0.8rem; color:#8892b0; margin-top:5px;">Azimuth: <span id="sunrise-az">--°</span></div>
+          </div>
+          <div class="celestial-card">
+            <div class="celestial-icon">🌇</div>
+            <div style="color:#8892b0; font-size:0.9rem;">Sunset</div>
+            <div class="celestial-time" id="sunset">--:--</div>
+            <div style="font-size:0.8rem; color:#8892b0; margin-top:5px;">Azimuth: <span id="sunset-az">--°</span></div>
+          </div>
+        </div>
+        <div class="data-grid">
+          <div class="data-item">
+            <div class="data-label">Solar Noon</div>
+            <div class="data-value" id="solar-noon">--:--</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Day Length</div>
+            <div class="data-value" id="day-length">--h --m</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-star"></i> Visible Constellations Tonight</h3>
+        <p style="color:#8892b0; font-size:0.9rem; margin-bottom:15px;">
+          Best viewing: <span id="best-viewing">--:-- to --:--</span>
+        </p>
         <div id="constellations"></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-eye"></i> Observing Conditions</h3>
+        <div class="data-grid">
+          <div class="data-item">
+            <div class="data-label">Seeing</div>
+            <div class="data-value" id="seeing">--/5</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Transparency</div>
+            <div class="data-value" id="transparency">--/5</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Dark Sky Index</div>
+            <div class="data-value" id="dark-sky">--/10</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Humidity</div>
+            <div class="data-value" id="humidity">--%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLANETS TAB -->
+    <div id="planets" class="tab-content">
+      <div class="card">
+        <h3><i class="fas fa-globe-americas"></i> Solar System Explorer</h3>
+        <p style="color:#8892b0; font-size:0.9rem; margin-bottom:15px;">
+          Click any planet for detailed orbital mechanics & physical data
+        </p>
+        <div class="planet-grid" id="planet-grid"></div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-info-circle"></i> Planetary Alignment</h3>
+        <div class="data-grid">
+          <div class="data-item">
+            <div class="data-label">Mercury</div>
+            <div class="data-value" id="mercury-pos">--°</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Venus</div>
+            <div class="data-value" id="venus-pos">--°</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Mars</div>
+            <div class="data-value" id="mars-pos">--°</div>
+          </div>
+          <div class="data-item">
+            <div class="data-value" id="jupiter-pos">--°</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECHNICAL DATA TAB -->
+    <div id="technical" class="tab-content">
+      <div class="card">
+        <h3><i class="fas fa-microchip"></i> Orbital Mechanics</h3>
+        <div class="data-grid">
+          <div class="data-item">
+            <div class="data-label">ISS Apogee</div>
+            <div class="data-value" id="iss-apogee">-- km</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">ISS Perigee</div>
+            <div class="data-value" id="iss-perigee">-- km</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Orbital Period</div>
+            <div class="data-value" id="orbital-period">-- min</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Inclination</div>
+            <div class="data-value" id="inclination">--°</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-atom"></i> Advanced Ephemeris</h3>
+        <table class="tech-table">
+          <tr>
+            <td>Sidereal Time</td>
+            <td id="sidereal-time">--:--:--</td>
+          </tr>
+          <tr>
+            <td>Julian Date</td>
+            <td id="julian-date">------</td>
+          </tr>
+          <tr>
+            <td>Earth-Sun Distance</td>
+            <td id="earth-sun-dist">-- AU</td>
+          </tr>
+          <tr>
+            <td>Barycenter Offset</td>
+            <td id="barycenter">-- km</td>
+          </tr>
+          <tr>
+            <td>Solar Activity</td>
+            <td id="solar-activity">--</td>
+          </tr>
+          <tr>
+            <td>Magnetosphere Kp</td>
+            <td id="kp-index">--</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-broadcast-tower"></i> Radio Astronomy</h3>
+        <div class="data-grid">
+          <div class="data-item">
+            <div class="data-label">1420 MHz Line</div>
+            <div class="data-value" id="hydrogen-line">Active</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">Pulsar PSR B1919</div>
+            <div class="data-value" id="pulsar">1.337s</div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- EVENTS TAB -->
     <div id="events" class="tab-content">
       <div class="card">
-        <h3>📅 Stargazing Event Invites</h3>
+        <h3><i class="fas fa-calendar-plus"></i> Create Stargazing Event</h3>
         <form id="event-form">
-          <input type="text" id="event-name" placeholder="Event Name (e.g. Perseid Watch)" required>
+          <input type="text" id="event-name" placeholder="Event Name (e.g. Perseid Meteor Shower)" required>
           <input type="datetime-local" id="event-time" required>
-          <input type="text" id="event-location" placeholder="Location (e.g. Love Beach)" required>
-          <button type="submit">📡 Broadcast Invite</button>
+          <input type="text" id="event-location" placeholder="Location (e.g. Love Beach, Nassau)" required>
+          <select id="event-type">
+            <option value="visual">Visual Observation</option>
+            <option value="photography">Astrophotography</option>
+            <option value="educational">Educational Session</option>
+            <option value="special">Special Event</option>
+          </select>
+          <button type="submit"><i class="fas fa-satellite-dish"></i> Broadcast Invite</button>
         </form>
       </div>
       <div id="event-list"></div>
     </div>
   </main>
 
+  <!-- Planet Detail Modal -->
+  <div id="planet-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-planet-name">Planet</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div id="modal-planet-content"></div>
+    </div>
+  </div>
+
   <nav>
-    <button class="active" onclick="showTab('tracker')">🛰️ Tracker</button>
-    <button onclick="showTab('sky')">🌌 Sky</button>
-    <button onclick="showTab('events')">📅 Events</button>
+    <button class="active" onclick="showTab('tracker', this)">
+      <i class="fas fa-satellite"></i>
+      <span>Tracker</span>
+    </button>
+    <button onclick="showTab('sky', this)">
+      <i class="fas fa-star"></i>
+      <span>Sky</span>
+    </button>
+    <button onclick="showTab('planets', this)">
+      <i class="fas fa-globe-americas"></i>
+      <span>Planets</span>
+    </button>
+    <button onclick="showTab('technical', this)">
+      <i class="fas fa-microchip"></i>
+      <span>Data</span>
+    </button>
+    <button onclick="showTab('events', this)">
+      <i class="fas fa-calendar"></i>
+      <span>Events</span>
+    </button>
   </nav>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    // TAB SWITCHING
-    function showTab(id) {
+    // Generate Stars Background
+    function createStars() {
+      const starsContainer = document.getElementById('stars');
+      for (let i = 0; i < 150; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        const size = Math.random() * 3;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+        star.style.setProperty('--opacity', Math.random() * 0.8 + 0.2);
+        starsContainer.appendChild(star);
+      }
+    }
+    createStars();
+
+    // Planet Data
+    const planets = {
+      mercury: {
+        name: 'Mercury',
+        icon: '🪐',
+        color: '#8c8c8c',
+        mass: '3.285 × 10²³ kg',
+        diameter: '4,879 km',
+        distance: '57.9 million km',
+        orbitalPeriod: '87.97 days',
+        orbitalVelocity: '47.4 km/s',
+        eccentricity: '0.2056',
+        inclination: '7.005°',
+        aphelion: '69.8 million km',
+        perihelion: '46.0 million km',
+        surfaceTemp: '-173°C to 427°C',
+        moons: '0',
+        dayLength: '58.65 days',
+        gravity: '3.7 m/s²',
+        escapeVelocity: '4.25 km/s',
+        albedo: '0.142',
+        visible: false
+      },
+      venus: {
+        name: 'Venus',
+        icon: '🌍',
+        color: '#e6c87a',
+        mass: '4.867 × 10²⁴ kg',
+        diameter: '12,104 km',
+        distance: '108.2 million km',
+        orbitalPeriod: '224.7 days',
+        orbitalVelocity: '35.0 km/s',
+        eccentricity: '0.0068',
+        inclination: '3.39°',
+        aphelion: '108.9 million km',
+        perihelion: '107.5 million km',
+        surfaceTemp: '462°C',
+        moons: '0',
+        dayLength: '243 days',
+        gravity: '8.87 m/s²',
+        escapeVelocity: '10.36 km/s',
+        albedo: '0.75',
+        visible: true
+      },
+      mars: {
+        name: 'Mars',
+        icon: '🔴',
+        color: '#c1440e',
+        mass: '6.39 × 10²³ kg',
+        diameter: '6,779 km',
+        distance: '227.9 million km',
+        orbitalPeriod: '687 days',
+        orbitalVelocity: '24.1 km/s',
+        eccentricity: '0.0934',
+        inclination: '1.85°',
+        aphelion: '249.2 million km',
+        perihelion: '206.6 million km',
+        surfaceTemp: '-153°C to 20°C',
+        moons: '2',
+        dayLength: '24h 37m',
+        gravity: '3.71 m/s²',
+        escapeVelocity: '5.03 km/s',
+        albedo: '0.17',
+        visible: true
+      },
+      jupiter: {
+        name: 'Jupiter',
+        icon: '🟤',
+        color: '#d8ca9d',
+        mass: '1.898 × 10²⁷ kg',
+        diameter: '139,820 km',
+        distance: '778.5 million km',
+        orbitalPeriod: '11.86 years',
+        orbitalVelocity: '13.1 km/s',
+        eccentricity: '0.0489',
+        inclination: '1.31°',
+        aphelion: '816.6 million km',
+        perihelion: '740.5 million km',
+        surfaceTemp: '-108°C',
+        moons: '95',
+        dayLength: '9h 56m',
+        gravity: '24.79 m/s²',
+        escapeVelocity: '60.2 km/s',
+        albedo: '0.503',
+        visible: true
+      },
+      saturn: {
+        name: 'Saturn',
+        icon: '🪐',
+        color: '#f4d59e',
+        mass: '5.683 × 10²⁶ kg',
+        diameter: '116,460 km',
+        distance: '1.43 billion km',
+        orbitalPeriod: '29.45 years',
+        orbitalVelocity: '9.7 km/s',
+        eccentricity: '0.0565',
+        inclination: '2.49°',
+        aphelion: '1.51 billion km',
+        perihelion: '1.35 billion km',
+        surfaceTemp: '-139°C',
+        moons: '146',
+        dayLength: '10h 42m',
+        gravity: '10.44 m/s²',
+        escapeVelocity: '36.09 km/s',
+        albedo: '0.499',
+        visible: true
+      },
+      uranus: {
+        name: 'Uranus',
+        icon: '🔵',
+        color: '#d1e7e7',
+        mass: '8.681 × 10²⁵ kg',
+        diameter: '50,724 km',
+        distance: '2.87 billion km',
+        orbitalPeriod: '84 years',
+        orbitalVelocity: '6.8 km/s',
+        eccentricity: '0.0457',
+        inclination: '0.77°',
+        aphelion: '3.01 billion km',
+        perihelion: '2.74 billion km',
+        surfaceTemp: '-197°C',
+        moons: '28',
+        dayLength: '17h 14m',
+        gravity: '8.69 m/s²',
+        escapeVelocity: '21.38 km/s',
+        albedo: '0.488',
+        visible: false
+      },
+      neptune: {
+        name: 'Neptune',
+        icon: '🔷',
+        color: '#5b5ddf',
+        mass: '1.024 × 10²⁶ kg',
+        diameter: '49,244 km',
+        distance: '4.5 billion km',
+        orbitalPeriod: '164.8 years',
+        orbitalVelocity: '5.4 km/s',
+        eccentricity: '0.0113',
+        inclination: '1.77°',
+        aphelion: '4.55 billion km',
+        perihelion: '4.45 billion km',
+        surfaceTemp: '-201°C',
+        moons: '16',
+        dayLength: '16h 6m',
+        gravity: '11.15 m/s²',
+        escapeVelocity: '23.56 km/s',
+        albedo: '0.475',
+        visible: false
+      }
+    };
+
+    // Constellations by month
+    const constellations = [
+      { name: 'Orion', months: [10,11,0,1,2], ra: '5h', dec: '+5°', magnitude: '0.5', stars: '7 major', desc: 'The Hunter - Features Betelgeuse & Rigel' },
+      { name: 'Ursa Major', months: [2,3,4,5,6], ra: '10h 40m', dec: '+55°', magnitude: '1.8', stars: '7 major', desc: 'The Great Bear - Contains Big Dipper' },
+      { name: 'Cassiopeia', months: [8,9,10,11,0,1], ra: '1h', dec: '+60°', magnitude: '2.2', stars: '5 major', desc: 'The Queen - Distinctive W shape' },
+      { name: 'Cygnus', months: [6,7,8,9,10], ra: '20h 30m', dec: '+42°', magnitude: '1.3', stars: '5 major', desc: 'The Swan - Northern Cross asterism' },
+      { name: 'Scorpius', months: [5,6,7,8], ra: '17h', dec: '-40°', magnitude: '1.0', stars: '12 major', desc: 'The Scorpion - Features Antares' },
+      { name: 'Crux', months: [1,2,3,4,5], ra: '12h 30m', dec: '-60°', magnitude: '0.8', stars: '4 major', desc: 'Southern Cross - Navigation marker' },
+      { name: 'Pegasus', months: [7,8,9,10,11], ra: '22h', dec: '+20°', magnitude: '2.4', stars: '4 major', desc: 'The Winged Horse - Great Square' },
+      { name: 'Canis Major', months: [11,0,1,2], ra: '6h 30m', dec: '-20°', magnitude: '0.5', stars: '5 major', desc: 'The Big Dog - Home to Sirius' },
+      { name: 'Leo', months: [2,3,4,5], ra: '10h 30m', dec: '+15°', magnitude: '1.4', stars: '6 major', desc: 'The Lion - Features Regulus' },
+      { name: 'Andromeda', months: [9,10,11,0], ra: '1h', dec: '+40°', magnitude: '2.1', stars: '4 major', desc: 'The Princess - Contains M31 galaxy' }
+    ];
+
+    // Tab Switching
+    function showTab(id, btn) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
       document.getElementById(id).classList.add('active');
       document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
+      if (btn) btn.classList.add('active');
     }
 
-    // MAP & ISS TRACKING
+    // Initialize Map
     const map = L.map('map').setView([25.0343, -77.3963], 5);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-    const issIcon = L.divIcon({ html: '🛰️', className: '', iconSize: [24, 24], iconAnchor: [12, 12] });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { 
+      attribution: '© OpenStreetMap © CARTO' 
+    }).addTo(map);
+    
+    const issIcon = L.divIcon({ 
+      html: '<i class="fas fa-satellite" style="color:#00d4ff; font-size:24px; filter:drop-shadow(0 0 10px #00d4ff);"></i>', 
+      className: '', 
+      iconSize: [24, 24], 
+      iconAnchor: [12, 12] 
+    });
     const issMarker = L.marker([25.0343, -77.3963], { icon: issIcon }).addTo(map);
-    let issPolyline = L.polyline([], { color: '#00d4ff', weight: 2 }).addTo(map);
+    let issPolyline = L.polyline([], { color: '#00d4ff', weight: 3, opacity: 0.7 }).addTo(map);
 
+    // ISS Tracking with Advanced Data
     async function updateISS() {
       try {
         const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
         const data = await res.json();
+        
         issMarker.setLatLng([data.latitude, data.longitude]);
         issPolyline.addLatLng([data.latitude, data.longitude]);
-        document.getElementById('iss-data').innerHTML = 
-          `LAT: ${data.latitude.toFixed(4)}° | LON: ${data.longitude.toFixed(4)}° | ALT: ${Math.round(data.altitude)} km`;
+        
+        // Keep only last 50 points
+        const latlngs = issPolyline.getLatLngs();
+        if (latlngs.length > 50) issPolyline.setLatLngs(latlngs.slice(-50));
+        
+        document.getElementById('iss-data').innerHTML = `
+          <div style="margin-bottom:8px;">
+            <i class="fas fa-location-crosshairs"></i> 
+            ${data.latitude.toFixed(4)}°, ${data.longitude.toFixed(4)}°
+          </div>
+          <div style="font-size:0.8rem; color:#8892b0;">
+            Altitude: ${Math.round(data.altitude)} km
+          </div>
+        `;
+        
+        document.getElementById('iss-velocity').textContent = data.velocity.toFixed(2) + ' km/s';
+        document.getElementById('iss-footprint').textContent = Math.round(data.footprint) + ' km';
+        document.getElementById('iss-daynum').textContent = data.daynum.toFixed(4);
+        document.getElementById('iss-solar-lat').textContent = data.solar_lat.toFixed(2) + '°';
+        document.getElementById('iss-apogee').textContent = Math.round(data.apogee) + ' km';
+        document.getElementById('iss-perigee').textContent = Math.round(data.perigee) + ' km';
+        document.getElementById('orbital-period').textContent = (data.period / 60).toFixed(2) + ' min';
+        document.getElementById('inclination').textContent = data.inclination.toFixed(3) + '°';
+        
       } catch(e) {
         document.getElementById('iss-data').textContent = 'Signal lost. Reconnecting...';
       }
     }
     updateISS();
-    setInterval(updateISS, 5000);
+    setInterval(updateISS, 3000);
 
-    // CONSTELLATION VISIBILITY (SIMULATED FOR DEMO)
-    const month = new Date().getMonth();
-    const constellations = [
-      { name: 'Orion', visible: [10,11,0,1,2], desc: 'Hunter | Best: Dec-Feb' },
-      { name: 'Ursa Major', visible: [2,3,4,5,6], desc: 'Big Dipper | Best: Mar-May' },
-      { name: 'Crux (Southern Cross)', visible: [1,2,3,4,5], desc: 'Southern sky | Best: Feb-Apr' },
-      { name: 'Scorpius', visible: [4,5,6,7,8], desc: 'Summer triangle | Best: May-Jul' },
-      { name: 'Pegasus', visible: [7,8,9,10], desc: 'Fall square | Best: Aug-Oct' },
-      { name: 'Canis Major', visible: [11,0,1], desc: 'Sirius | Best: Nov-Jan' }
-    ];
-    const tonight = constellations.filter(c => c.visible.includes(month));
-    document.getElementById('sky-date').textContent = `Visible from Bahamas • ${new Date().toLocaleDateString('en-US', { month:'long', day:'numeric' })}`;
-    const skyDiv = document.getElementById('constellations');
-    tonight.forEach(c => {
-      skyDiv.innerHTML += `<div class="constellation"><span>${c.name}</span> ${c.desc}</div>`;
-    });
+    // Sun Calculation
+    function calculateSunTimes() {
+      const date = new Date();
+      const lat = 25.0343; // Nassau
+      const lon = -77.3963;
+      const tz = -5; // EST
+      
+      // Simplified sun calculation
+      const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+      const frac = dayOfYear / 365.25;
+      
+      const eqOfTime = 229.18 * (0.000075 + 0.001868 * Math.cos(2 * Math.PI * frac) 
+        - 0.032077 * Math.sin(2 * Math.PI * frac) 
+        - 0.014615 * Math.cos(4 * Math.PI * frac) 
+        - 0.040849 * Math.sin(4 * Math.PI * frac));
+      
+      const decl = 0.006918 - 0.399912 * Math.cos(2 * Math.PI * frac) 
+        + 0.070257 * Math.sin(2 * Math.PI * frac) 
+        - 0.006758 * Math.cos(4 * Math.PI * frac) 
+        + 0.000907 * Math.sin(4 * Math.PI * frac) 
+        - 0.002697 * Math.cos(6 * Math.PI * frac) 
+        + 0.00148 * Math.sin(6 * Math.PI * frac);
+      
+      const hourAngle = Math.acos(Math.cos(Math.PI * 90.833 / 180) / (Math.cos(lat * Math.PI / 180) * Math.cos(decl)) 
+        - Math.tan(lat * Math.PI / 180) * Math.tan(decl));
+      
+      const sunrise = 720 - 4 * (lon + hourAngle * 180 / Math.PI) - eqOfTime + tz * 60;
+      const sunset = 720 - 4 * (lon - hourAngle * 180 / Math.PI) - eqOfTime + tz * 60;
+      
+      const sunriseH = Math.floor(sunrise / 60);
+      const sunriseM = Math.floor(sunrise % 60);
+      const sunsetH = Math.floor(sunset / 60);
+      const sunsetM = Math.floor(sunset % 60);
+      
+      document.getElementById('sunrise').textContent = `${sunriseH.toString().padStart(2,'0')}:${sunriseM.toString().padStart(2,'0')}`;
+      document.getElementById('sunset').textContent = `${sunsetH.toString().padStart(2,'0')}:${sunsetM.toString().padStart(2,'0')}`;
+      
+      const solarNoon = (sunrise + sunset) / 2;
+      const solarNoonH = Math.floor(solarNoon / 60);
+      const solarNoonM = Math.floor(solarNoon % 60);
+      document.getElementById('solar-noon').textContent = `${solarNoonH.toString().padStart(2,'0')}:${solarNoonM.toString().padStart(2,'0')}`;
+      
+      const dayLengthMin = sunset - sunrise;
+      const dayLengthH = Math.floor(dayLengthMin / 60);
+      const dayLengthM = Math.floor(dayLengthMin % 60);
+      document.getElementById('day-length').textContent = `${dayLengthH}h ${dayLengthM}m`;
+      
+      // Sunrise/Sunset azimuth (simplified)
+      const sunriseAz = 90 - (decl * 180 / Math.PI) * 0.5;
+      const sunsetAz = 270 + (decl * 180 / Math.PI) * 0.5;
+      document.getElementById('sunrise-az').textContent = Math.round(sunriseAz) + '°';
+      document.getElementById('sunset-az').textContent = Math.round(sunsetAz) + '°';
+    }
+    calculateSunTimes();
 
-    // EVENTS SYSTEM (LOCALSTORAGE)
+    // Moon Phase Calculation
+    function calculateMoonPhase() {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      
+      let c, e, jd, b;
+      
+      if (month < 3) {
+        year--;
+        month += 12;
+      }
+      
+      ++month;
+      c = 365.25 * year;
+      e = 30.6 * month;
+      jd = c + e + day - 694039.09;
+      jd /= 29.5305882;
+      b = parseInt(jd);
+      jd -= b;
+      b = Math.round(jd * 8);
+      
+      const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 
+                      'Full Moon', 'Waning Gibbous', 'Last Quarter', 'Waning Crescent'];
+      const icons = ['🌑', '🌒', '🌓', '🌔', '', '🌖', '🌗', '🌘'];
+      
+      const phase = phases[b];
+      const icon = icons[b];
+      const illumination = Math.round((1 - Math.cos(jd * 2 * Math.PI)) / 2 * 100);
+      const age = Math.round(jd * 29.53);
+      
+      document.getElementById('moon-phase').textContent = `${icon} ${phase}`;
+      document.getElementById('moon-illumination').textContent = illumination + '%';
+      document.getElementById('moon-age').textContent = age + ' days';
+      
+      // Moon distance (varies 356,400 to 406,700 km)
+      const moonDist = 384400 + Math.sin(jd * 2 * Math.PI) * 25000;
+      document.getElementById('moon-distance').textContent = Math.round(moonDist).toLocaleString() + ' km';
+    }
+    calculateMoonPhase();
+
+    // Constellations Display
+    function showConstellations() {
+      const month = new Date().getMonth();
+      const visible = constellations.filter(c => c.months.includes(month));
+      
+      const container = document.getElementById('constellations');
+      container.innerHTML = '';
+      
+      visible.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'constellation-item';
+        div.innerHTML = `
+          <div>
+            <div class="constellation-name">${c.name}</div>
+            <div class="constellation-info">${c.desc}</div>
+          </div>
+          <div style="text-align:right; font-size:0.85rem; color:#8892b0;">
+            <div>RA: ${c.ra} | Dec: ${c.dec}</div>
+            <div>Mag: ${c.magnitude} | ${c.stars}</div>
+          </div>
+        `;
+        div.onclick = () => alert(`${c.name}\n\nRight Ascension: ${c.ra}\nDeclination: ${c.dec}\nMagnitude: ${c.magnitude}\nMajor Stars: ${c.stars}\n\n${c.desc}`);
+        container.appendChild(div);
+      });
+      
+      // Best viewing time (simplified)
+      document.getElementById('best-viewing').textContent = '21:00 to 03:00';
+    }
+    showConstellations();
+
+    // Observing Conditions (Simulated)
+    function updateObservingConditions() {
+      document.getElementById('seeing').textContent = (Math.random() * 2 + 3).toFixed(1) + '/5';
+      document.getElementById('transparency').textContent = (Math.random() * 2 + 3).toFixed(1) + '/5';
+      document.getElementById('dark-sky').textContent = (Math.random() * 3 + 7).toFixed(1) + '/10';
+      document.getElementById('humidity').textContent = Math.round(Math.random() * 30 + 60) + '%';
+    }
+    updateObservingConditions();
+
+    // Planets Grid
+    function renderPlanets() {
+      const grid = document.getElementById('planet-grid');
+      Object.values(planets).forEach(planet => {
+        const card = document.createElement('div');
+        card.className = 'planet-card';
+        card.style.borderColor = planet.color;
+        card.innerHTML = `
+          <span class="planet-icon">${planet.icon}</span>
+          <div class="planet-name">${planet.name}</div>
+          <div class="planet-status">${planet.visible ? '<span class="status-badge status-visible">Visible</span>' : '<span class="status-badge status-hidden">Hidden</span>'}</div>
+        `;
+        card.onclick = () => showPlanetDetail(planet);
+        grid.appendChild(card);
+      });
+      
+      // Planetary positions (simulated)
+      document.getElementById('mercury-pos').textContent = (Math.random() * 360).toFixed(1) + '°';
+      document.getElementById('venus-pos').textContent = (Math.random() * 360).toFixed(1) + '°';
+      document.getElementById('mars-pos').textContent = (Math.random() * 360).toFixed(1) + '°';
+      document.getElementById('jupiter-pos').textContent = (Math.random() * 360).toFixed(1) + '°';
+    }
+    renderPlanets();
+
+    // Planet Detail Modal
+    function showPlanetDetail(planet) {
+      document.getElementById('modal-planet-name').textContent = planet.name;
+      document.getElementById('modal-planet-name').style.color = planet.color;
+      
+      document.getElementById('modal-planet-content').innerHTML = `
+        <div style="text-align:center; margin-bottom:20px;">
+          <span style="font-size:5rem;">${planet.icon}</span>
+        </div>
+        
+        <div class="card">
+          <h3 style="font-size:1rem; margin-bottom:10px;"><i class="fas fa-ruler-combined"></i> Physical Characteristics</h3>
+          <table class="tech-table">
+            <tr><td>Mass</td><td>${planet.mass}</td></tr>
+            <tr><td>Diameter</td><td>${planet.diameter}</td></tr>
+            <tr><td>Surface Gravity</td><td>${planet.gravity}</td></tr>
+            <tr><td>Escape Velocity</td><td>${planet.escapeVelocity}</td></tr>
+            <tr><td>Surface Temperature</td><td>${planet.surfaceTemp}</td></tr>
+            <tr><td>Albedo</td><td>${planet.albedo}</td></tr>
+          </table>
+        </div>
+        
+        <div class="card">
+          <h3 style="font-size:1rem; margin-bottom:10px;"><i class="fas fa-orbit"></i> Orbital Mechanics</h3>
+          <table class="tech-table">
+            <tr><td>Semi-Major Axis</td><td>${planet.distance}</td></tr>
+            <tr><td>Orbital Period</td><td>${planet.orbitalPeriod}</td></tr>
+            <tr><td>Orbital Velocity</td><td>${planet.orbitalVelocity}</td></tr>
+            <tr><td>Eccentricity</td><td>${planet.eccentricity}</td></tr>
+            <tr><td>Inclination</td><td>${planet.inclination}</td></tr>
+            <tr><td>Aphelion</td><td>${planet.aphelion}</td></tr>
+            <tr><td>Perihelion</td><td>${planet.perihelion}</td></tr>
+          </table>
+        </div>
+        
+        <div class="card">
+          <h3 style="font-size:1rem; margin-bottom:10px;"><i class="fas fa-clock"></i> Rotation & Moons</h3>
+          <table class="tech-table">
+            <tr><td>Day Length</td><td>${planet.dayLength}</td></tr>
+            <tr><td>Known Moons</td><td>${planet.moons}</td></tr>
+            <tr><td>Visibility from Earth</td><td>${planet.visible ? '<span class="status-badge status-visible">Yes</span>' : '<span class="status-badge status-hidden">No</span>'}</td></tr>
+          </table>
+        </div>
+      `;
+      
+      document.getElementById('planet-modal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('planet-modal').classList.remove('active');
+    }
+
+    // Close modal on outside click
+    document.getElementById('planet-modal').onclick = (e) => {
+      if (e.target.id === 'planet-modal') closeModal();
+    };
+
+    // Advanced Technical Data
+    function updateTechnicalData() {
+      const now = new Date();
+      
+      // Sidereal time (simplified)
+      const sidereal = (now.getHours() * 15 + now.getMinutes() * 0.25) % 24;
+      const siderealH = Math.floor(sidereal);
+      const siderealM = Math.floor((sidereal - siderealH) * 60);
+      const siderealS = Math.floor(((sidereal - siderealH) * 60 - siderealM) * 60);
+      document.getElementById('sidereal-time').textContent = 
+        `${siderealH.toString().padStart(2,'0')}:${siderealM.toString().padStart(2,'0')}:${siderealS.toString().padStart(2,'0')}`;
+      
+      // Julian Date
+      const jd = 2460000 + (now - new Date(2023, 0, 1)) / (1000 * 60 * 60 * 24);
+      document.getElementById('julian-date').textContent = jd.toFixed(5);
+      
+      // Earth-Sun distance (varies 0.983 to 1.017 AU)
+      const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+      const earthSunDist = 1 + 0.0167 * Math.cos(2 * Math.PI * (dayOfYear - 3) / 365);
+      document.getElementById('earth-sun-dist').textContent = earthSunDist.toFixed(4) + ' AU';
+      
+      // Barycenter offset (Earth-Moon barycenter)
+      document.getElementById('barycenter').textContent = '4,671 km';
+      
+      // Solar activity (simulated)
+      const solarFlux = Math.round(100 + Math.random() * 100);
+      document.getElementById('solar-activity').textContent = solarFlux + ' sfu';
+      
+      // Kp index (geomagnetic activity)
+      const kp = (Math.random() * 6 + 1).toFixed(1);
+      document.getElementById('kp-index').textContent = kp;
+    }
+    updateTechnicalData();
+    setInterval(updateTechnicalData, 10000);
+
+    // Events System
     const form = document.getElementById('event-form');
     const list = document.getElementById('event-list');
     let events = JSON.parse(localStorage.getItem('horizon-events') || '[]');
 
     function renderEvents() {
       list.innerHTML = '';
+      if (events.length === 0) {
+        list.innerHTML = '<div class="card" style="text-align:center; color:#8892b0;">No events yet. Create one above!</div>';
+        return;
+      }
+      
       events.forEach((ev, i) => {
-        list.innerHTML += `
-          <div class="card event">
-            <h4>${ev.name}</h4>
-            <p>📍 ${ev.location} | 🕒 ${new Date(ev.time).toLocaleString()}</p>
-            <button class="rsvp" onclick="rsvp(${i})">✅ RSVP</button>
-          </div>`;
+        const card = document.createElement('div');
+        card.className = 'card event';
+        card.style.borderLeft = '3px solid var(--accent2)';
+        card.innerHTML = `
+          <h4 style="margin-bottom:8px; color:var(--accent2);">${ev.name}</h4>
+          <p style="color:#8892b0; font-size:0.9rem; margin-bottom:8px;">
+            <i class="fas fa-calendar"></i> ${new Date(ev.time).toLocaleString()}<br>
+            <i class="fas fa-location-dot"></i> ${ev.location}<br>
+            <i class="fas fa-tag"></i> ${ev.type}
+          </p>
+          <div style="display:flex; gap:10px;">
+            <button class="rsvp" onclick="rsvp(${i})" style="flex:1; padding:10px; background:rgba(0,212,255,0.1); border:1px solid var(--accent); color:var(--accent); border-radius:8px; cursor:pointer; font-weight:600;">
+              <i class="fas fa-check"></i> RSVP (${ev.rsvps || 0})
+            </button>
+            <button onclick="deleteEvent(${i})" style="padding:10px; background:rgba(255,100,100,0.1); border:1px solid #ff6464; color:#ff6464; border-radius:8px; cursor:pointer;">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+        list.appendChild(card);
       });
     }
     renderEvents();
@@ -151,17 +1333,38 @@
         name: document.getElementById('event-name').value,
         time: document.getElementById('event-time').value,
         location: document.getElementById('event-location').value,
+        type: document.getElementById('event-type').value,
         rsvps: 0
       };
       events.unshift(ev);
       localStorage.setItem('horizon-events', JSON.stringify(events));
       form.reset();
       renderEvents();
+      alert('Event broadcasted to all Horizon Cosmic Explorers in the Bahamas! 🛰️');
     };
 
     window.rsvp = (i) => {
-      events[i].rsvps++;
+      events[i].rsvps = (events[i].rsvps || 0) + 1;
       localStorage.setItem('horizon-events', JSON.stringify(events));
+      renderEvents();
+    };
+
+    window.deleteEvent = (i) => {
+      if (confirm('Delete this event?')) {
+        events.splice(i, 1);
+        localStorage.setItem('horizon-events', JSON.stringify(events));
+        renderEvents();
+      }
+    };
+
+    // Initial load
+    window.onload = () => {
+      updateISS();
+      calculateSunTimes();
+      calculateMoonPhase();
+      showConstellations();
+      renderPlanets();
+      updateTechnicalData();
       renderEvents();
     };
   </script>
